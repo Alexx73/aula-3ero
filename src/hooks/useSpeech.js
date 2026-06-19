@@ -1,9 +1,14 @@
 import { useState, useEffect } from 'react';
 
-export default function useSpeech () {
+export default function useSpeech (options = {}) {
   const [playingItems, setPlayingItems] = useState(new Set());
   const [voices, setVoices] = useState([]);
   const synth = window.speechSynthesis;
+  const {
+    pitch = 1.35,
+    rate = 1.08,
+    letterRate = 0.95
+  } = options;
 
   // Load voices
   useEffect(() => {
@@ -19,8 +24,11 @@ export default function useSpeech () {
   }, []);
 
   // Function to play sound (letter or word)
-  const playSound = (item, isLetter = false) => {
-    if (playingItems.size > 0) {
+  const playSound = (item, isLetter = false, force = false) => {
+    if (force) {
+      synth.cancel();
+      setPlayingItems(new Set());
+    } else if (playingItems.size > 0) {
       console.log('Playback in progress, ignoring request');
       return;
     }
@@ -39,13 +47,22 @@ export default function useSpeech () {
     const utterance = new SpeechSynthesisUtterance(textToSpeak);
     utterance.lang = 'en-US';
     utterance.volume = 1;
-    utterance.rate = 0.7;
+    utterance.rate = isLetter ? letterRate : rate;
+    utterance.pitch = pitch;
 
-    // Find a female voice if available
-    const femaleVoice = voices.find(voice =>
-      voice.lang.includes('en') && voice.name.toLowerCase().includes('female')
-    );
-    if (femaleVoice) utterance.voice = femaleVoice;
+    // Prefer a lighter, more youthful English voice if the device has one.
+    const preferredVoice = voices.find(voice => {
+      const name = voice.name.toLowerCase();
+      return voice.lang.includes('en') && (
+        name.includes('child') ||
+        name.includes('kid') ||
+        name.includes('boy') ||
+        name.includes('junior') ||
+        name.includes('young') ||
+        name.includes('female')
+      );
+    });
+    if (preferredVoice) utterance.voice = preferredVoice;
 
     // Handle playback end
     utterance.onend = () => {

@@ -16,6 +16,7 @@
     "@tailwindcss/vite": "^4.1.14",
     "flowbite": "^3.1.2",
     "flowbite-react": "^0.6.4",
+    "pdfjs-dist": "^6.0.227",
     "react": "^19.1.1",
     "react-dom": "^19.1.1",
     "react-router-dom": "^6.30.1",
