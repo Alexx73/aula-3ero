@@ -18,9 +18,12 @@ export default function PdfViewer({
   const wrapperRef = useRef(null);
   const viewerRef = useRef(null);
   const canvasRefs = useRef([]);
+  const renderTaskRefs = useRef([]);
   const pdfDocRef = useRef(null);
   const renderTokenRef = useRef(0);
   const hideTimerRef = useRef(null);
+  const zoomRef = useRef(1);
+  const pinchZoomRafRef = useRef(0);
   const pinchStateRef = useRef({
     startDistance: 0,
     startZoom: 1,
@@ -45,6 +48,10 @@ export default function PdfViewer({
   };
 
   useEffect(() => {
+    zoomRef.current = zoom;
+  }, [zoom]);
+
+  useEffect(() => {
     let cancelled = false;
 
     const cleanupPdf = async () => {
@@ -57,6 +64,7 @@ export default function PdfViewer({
       setPageCount(0);
       pdfDocRef.current = null;
       canvasRefs.current = [];
+      renderTaskRefs.current = [];
 
       try {
         const response = await fetch(src);
@@ -129,7 +137,7 @@ export default function PdfViewer({
 
       pinchStateRef.current = {
         startDistance: getDistance(event.touches),
-        startZoom: zoom,
+        startZoom: zoomRef.current,
         focusX: rect ? container.scrollLeft + (centroidX - rect.left) : 0,
         focusY: rect ? container.scrollTop + (centroidY - rect.top) : 0,
         scrollLeft: container?.scrollLeft ?? 0,
@@ -148,14 +156,25 @@ export default function PdfViewer({
 
       const scaleFactor = currentDistance / startDistance;
       const nextZoom = Math.min(2, Math.max(0.75, +(startZoom * scaleFactor).toFixed(2)));
-      setZoom(nextZoom);
+
+      if (pinchZoomRafRef.current) {
+        window.cancelAnimationFrame(pinchZoomRafRef.current);
+      }
+
+      pinchZoomRafRef.current = window.requestAnimationFrame(() => {
+        setZoom((currentZoom) => (currentZoom === nextZoom ? currentZoom : nextZoom));
+      });
     };
 
     const handleTouchEnd = (event) => {
       if (event.touches.length < 2) {
+        if (pinchZoomRafRef.current) {
+          window.cancelAnimationFrame(pinchZoomRafRef.current);
+          pinchZoomRafRef.current = 0;
+        }
         pinchStateRef.current = {
           startDistance: 0,
-          startZoom: zoom,
+          startZoom: zoomRef.current,
           focusX: 0,
           focusY: 0,
           scrollLeft: viewerRef.current?.scrollLeft ?? 0,
@@ -170,12 +189,16 @@ export default function PdfViewer({
     el.addEventListener('touchcancel', handleTouchEnd, { passive: true });
 
     return () => {
+      if (pinchZoomRafRef.current) {
+        window.cancelAnimationFrame(pinchZoomRafRef.current);
+        pinchZoomRafRef.current = 0;
+      }
       el.removeEventListener('touchstart', handleTouchStart);
       el.removeEventListener('touchmove', handleTouchMove);
       el.removeEventListener('touchend', handleTouchEnd);
       el.removeEventListener('touchcancel', handleTouchEnd);
     };
-  }, [zoom]);
+  }, []);
 
   useEffect(() => {
     const container = viewerRef.current;
@@ -212,16 +235,31 @@ export default function PdfViewer({
         const context = canvas.getContext('2d');
         if (!context) continue;
 
+        const previousTask = renderTaskRefs.current[index - 1];
+        if (previousTask) {
+          previousTask.cancel();
+        }
+
         canvas.width = Math.floor(viewport.width * dpr);
         canvas.height = Math.floor(viewport.height * dpr);
         canvas.style.width = `${Math.floor(viewport.width)}px`;
         canvas.style.height = `${Math.floor(viewport.height)}px`;
 
-        await page.render({
+        const renderTask = page.render({
           canvasContext: context,
           viewport,
           transform: dpr !== 1 ? [dpr, 0, 0, dpr, 0, 0] : undefined,
-        }).promise;
+        });
+
+        renderTaskRefs.current[index - 1] = renderTask;
+
+        try {
+          await renderTask.promise;
+        } catch (renderError) {
+          if (renderError?.name !== 'RenderingCancelledException') {
+            throw renderError;
+          }
+        }
       }
     };
 
