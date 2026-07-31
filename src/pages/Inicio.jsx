@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import QuarterTabs from '../components/QuarterTabs';
 import ActivityCard from '../components/ActivityCard';
 import PdfViewer from '../modules/pdf-viewer';
@@ -64,7 +64,14 @@ const quarterData = [
 ];
 
 export default function Inicio() {
-  const [activeQuarter, setActiveQuarter] = useState('q1');
+  const [activeQuarter, setActiveQuarter] = useState(() => {
+    if (typeof window === 'undefined') return 'q1';
+    return window.localStorage.getItem('activeQuarter') ?? 'q1';
+  });
+
+  useEffect(() => {
+    window.localStorage.setItem('activeQuarter', activeQuarter);
+  }, [activeQuarter]);
 
   const activeData = useMemo(
     () => quarterData.find((quarter) => quarter.id === activeQuarter) ?? quarterData[0],
