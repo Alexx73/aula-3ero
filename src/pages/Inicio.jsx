@@ -39,6 +39,13 @@ const quarterData = [
         badge: 'Daily',
         accentClass: 'bg-orange-500',
       },
+      {
+        to: '/extraordinary-teenager',
+        title: 'ExtraordinaryTeenager',
+        subtitle: 'Una nueva pagina para seguir sumando contenido.',
+        badge: 'New',
+        accentClass: 'bg-fuchsia-500',
+      },
     ],
   },
   {

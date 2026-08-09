@@ -6,6 +6,7 @@ import Alphabet from './pages/Alphabet';
 import Personal from './pages/PersonalInformation';
 import Numbers from './pages/Numbers';
 import Routine from './pages/Routine';
+import ExtraordinaryTeenager from './pages/ExtraordinaryTeenager';
 
 
 import NavBar from './components/NavBar';
@@ -29,6 +30,7 @@ function App() {
           <Route path="/number" element={<Numbers />} />
           <Route path="/personal-information" element={<Personal />} />
           <Route path="/routine" element={<Routine />} />
+          <Route path="/extraordinary-teenager" element={<ExtraordinaryTeenager />} />
         </Routes>
        </div>
     </HashRouter>
