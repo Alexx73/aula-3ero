@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import whisperResult from "../assets/isaac_beech/Track 72_isaac_beech.json";
 import audioSrc from "../assets/isaac_beech/Track 72_isaac_beech.mp3";
+import isaacBeechImage from "../assets/isaac_beech/isaac_beech.png";
 
 const stripPunctuation = (value) =>
   String(value)
@@ -284,10 +285,15 @@ export default function ExtraordinaryTeenager() {
   return (
     <div className="relative flex min-h-[calc(100dvh-5rem)] items-start justify-center bg-[#8bd06e] px-3 pt-4 pb-24 dark:bg-[#20301f]">
       <div className="flex w-full max-w-[980px] flex-col">
-        <div className="mb-1 rounded-[1.5rem] border-8 border-[#ff8a00] bg-[#ff8a00] px-4  shadow-lg shadow-black/15">
-          <h1 className="whitespace-nowrap text-center text-[clamp(1.0rem,4.3vw,4.2rem)] font-black leading-none tracking-tight text-white [text-shadow:0_3px_0_rgba(0,0,0,0.06)]">
+        <div className="relative mb-1 rounded-[1.5rem] border-8 border-[#ff8a00] bg-[#ff8a00] px-4 py-2 shadow-lg shadow-black/15">
+          <h1 className="whitespace-nowrap text-left text-[clamp(1.0rem,4.3vw,4.2rem)] font-black leading-none tracking-tight text-white [text-shadow:0_3px_0_rgba(0,0,0,0.06)]">
             {titleText}
           </h1>
+          <img
+            src={isaacBeechImage}
+            alt="Isaac Beech"
+            className="absolute right-3 top-1/2 h-14 w-auto -translate-y-1/2 rounded-[0.45rem] object-cover shadow-md shadow-black/20 sm:right-4 sm:h-20 md:h-[6.2rem]"
+          />
         </div>
 
         <div
