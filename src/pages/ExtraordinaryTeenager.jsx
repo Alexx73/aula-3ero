@@ -467,7 +467,7 @@ export default function ExtraordinaryTeenager() {
                         key={`${paragraphIndex}-${sentenceIndex}-${sentence.startIndex}`}
                         className={`inline-flex flex-wrap items-start gap-x-1 gap-y-0 rounded-[0.9rem] px-0.5 py-0.25 transition-colors duration-150 ${
                           isSentenceActive
-                            ? "bg-[#dff3ff]/55 ring-1 ring-[#a9dfff]/45"
+                            ? "bg-transparent ring-[3px] ring-[#87ff14]/90 shadow-[0_0_0_1px_rgba(135,255,20,0.18)]"
                             : "bg-transparent"
                         }`}
                       >
@@ -504,7 +504,7 @@ export default function ExtraordinaryTeenager() {
                                 isActive
                                   ? "bg-white text-[#1f93d0] shadow-md shadow-white/30"
                                   : isVocabWord
-                                    ? "font-extrabold text-white"
+                                    ? "font-black text-[#ffffff] [text-shadow:0_1px_0_rgba(0,0,0,0.25)]"
                                     : "bg-transparent"
                               }`}
                               onClickCapture={
