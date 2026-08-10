@@ -14,9 +14,11 @@ export default function ExtraordinaryTeenager() {
   const wordRefs = useRef([]);
   const paragraphRefs = useRef([]);
   const paragraphJumpTimerRef = useRef(null);
+  const vocabTimerRef = useRef(null);
   const [currentTime, setCurrentTime] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);
   const [playRate, setPlayRate] = useState(1);
+  const [activeVocab, setActiveVocab] = useState(null);
   const introSegments = useMemo(() => {
     const segments = Array.isArray(whisperResult?.segments) ? whisperResult.segments : [];
     return segments.slice(0, 2);
@@ -106,6 +108,56 @@ export default function ExtraordinaryTeenager() {
     });
   }, [paragraphWordGroups]);
 
+  const paragraphSentenceGroups = useMemo(() => {
+    let cursor = 0;
+
+    return paragraphWordGroups.map((group) => {
+      const sentences = [];
+      let sentenceStart = 0;
+
+      group.forEach((word, position) => {
+        const cleaned = String(word?.word ?? "").trim();
+        const endsSentence = /[.!?]$/.test(cleaned);
+
+        if (endsSentence) {
+          sentences.push({
+            words: group.slice(sentenceStart, position + 1),
+            startIndex: cursor + sentenceStart,
+            endIndex: cursor + position,
+          });
+          sentenceStart = position + 1;
+        }
+      });
+
+      if (sentenceStart < group.length) {
+        sentences.push({
+          words: group.slice(sentenceStart),
+          startIndex: cursor + sentenceStart,
+          endIndex: cursor + group.length - 1,
+        });
+      }
+
+      cursor += group.length;
+      return sentences;
+    });
+  }, [paragraphWordGroups]);
+
+  const vocabEntries = useMemo(
+    () => ({
+      nickname: { label: "nickname", meaning: "apodo" },
+      "special school": { label: "special school", meaning: "escuela especial" },
+      "music school": { label: "music school", meaning: "escuela de música" },
+      orchestra: { label: "orchestra", meaning: "orquesta" },
+      subjects: { label: "subjects", meaning: "asignaturas" },
+      english: { label: "English", meaning: "inglés" },
+      science: { label: "science", meaning: "ciencias" },
+      math: { label: "math", meaning: "matemática" },
+      room: { label: "room", meaning: "habitación" },
+      "free time": { label: "free time", meaning: "tiempo libre" },
+    }),
+    []
+  );
+
   useEffect(() => {
     const audio = audioRef.current;
     if (!audio) return;
@@ -140,6 +192,9 @@ export default function ExtraordinaryTeenager() {
     return () => {
       if (paragraphJumpTimerRef.current) {
         window.clearTimeout(paragraphJumpTimerRef.current);
+      }
+      if (vocabTimerRef.current) {
+        window.clearTimeout(vocabTimerRef.current);
       }
     };
   }, []);
@@ -282,6 +337,94 @@ export default function ExtraordinaryTeenager() {
     }, 1000);
   };
 
+  const getVocabMatch = (wordIndex, paragraphIndex, wordPosition) => {
+    const currentWord = visibleWords[wordIndex];
+    const currentText = stripPunctuation(currentWord?.word).toLowerCase();
+    const nextText = stripPunctuation(visibleWords[wordIndex + 1]?.word).toLowerCase();
+    const prevText = stripPunctuation(visibleWords[wordIndex - 1]?.word).toLowerCase();
+
+    if (currentText === "nickname" && vocabEntries.nickname) {
+      return vocabEntries.nickname;
+    }
+
+    if (currentText === "orchestra" && vocabEntries.orchestra) {
+      return vocabEntries.orchestra;
+    }
+
+    if (currentText === "subjects" && vocabEntries.subjects) {
+      return vocabEntries.subjects;
+    }
+
+    if (currentText === "english" && vocabEntries.english) {
+      return vocabEntries.english;
+    }
+
+    if (currentText === "science" && vocabEntries.science) {
+      return vocabEntries.science;
+    }
+
+    if (currentText === "math" && vocabEntries.math) {
+      return vocabEntries.math;
+    }
+
+    if (currentText === "room" && vocabEntries.room) {
+      return vocabEntries.room;
+    }
+
+    if (currentText === "special" && nextText === "school" && vocabEntries["special school"]) {
+      return vocabEntries["special school"];
+    }
+
+    if (currentText === "music" && nextText === "school" && vocabEntries["music school"]) {
+      return vocabEntries["music school"];
+    }
+
+    if (currentText === "school" && prevText === "special" && vocabEntries["special school"]) {
+      return vocabEntries["special school"];
+    }
+
+    if (currentText === "school" && prevText === "music" && vocabEntries["music school"]) {
+      return vocabEntries["music school"];
+    }
+
+    if (currentText === "free" && nextText === "time" && vocabEntries["free time"]) {
+      return vocabEntries["free time"];
+    }
+
+    if (currentText === "time" && prevText === "free" && vocabEntries["free time"]) {
+      return vocabEntries["free time"];
+    }
+
+    return null;
+  };
+
+  const showVocabDefinition = (entry, targetEl) => {
+    if (!entry || !targetEl) return;
+
+    if (vocabTimerRef.current) {
+      window.clearTimeout(vocabTimerRef.current);
+      vocabTimerRef.current = null;
+    }
+
+    const rect = targetEl.getBoundingClientRect();
+    const bubbleWidth = 220;
+    const left = Math.max(12, Math.min(rect.left, window.innerWidth - bubbleWidth - 12));
+    const belowTop = rect.bottom + 10;
+    const aboveTop = rect.top - 78;
+    const top = belowTop + 74 > window.innerHeight ? Math.max(12, aboveTop) : belowTop;
+
+    setActiveVocab({
+      ...entry,
+      left,
+      top,
+    });
+
+    vocabTimerRef.current = window.setTimeout(() => {
+      setActiveVocab(null);
+      vocabTimerRef.current = null;
+    }, 3000);
+  };
+
   return (
     <div className="relative flex min-h-[calc(100dvh-5rem)] items-start justify-center bg-[#8bd06e] px-3 pt-4 pb-24 dark:bg-[#20301f]">
       <div className="flex w-full max-w-[980px] flex-col">
@@ -298,10 +441,11 @@ export default function ExtraordinaryTeenager() {
 
         <div
           ref={textContainerRef}
-          className="min-h-[48vh] flex-1 overflow-y-auto rounded-[1.4rem] border-2 border-white bg-[#3aa0d8] p-3 shadow-2xl shadow-black/20 sm:min-h-[58vh] sm:p-4"
+          className="relative min-h-[48vh] flex-1 overflow-y-auto rounded-[1.4rem] border-2 border-white bg-[#3aa0d8] p-3 shadow-2xl shadow-black/20 sm:min-h-[58vh] sm:p-4"
         >
           <div className="text-[clamp(1rem,2.1vw,1.15rem)] font-semibold leading-[1.38] text-white sm:leading-[1.58]">
-            {paragraphWordGroups.map((paragraphWords, paragraphIndex) => {
+            {paragraphSentenceGroups.map((sentenceGroups, paragraphIndex) => {
+
               return (
                 <p
                   key={paragraphIndex}
@@ -310,40 +454,72 @@ export default function ExtraordinaryTeenager() {
                       paragraphRefs.current[paragraphIndex] = node;
                     }
                   }}
-                  className="m-0 mb-4 flex flex-wrap items-start gap-x-1 gap-y-0 break-normal whitespace-normal last:mb-0 sm:mb-8"
+                  className={`m-0 mb-4 flex flex-wrap items-start gap-x-1 gap-y-0 break-normal whitespace-normal last:mb-0 sm:mb-8 ${
+                    ""
+                  }`}
                 >
-                  {paragraphWords.map((word, wordPosition) => {
-                    const displayWord = String(word.word).trimStart();
-                    const wordIndex = paragraphWordIndices[paragraphIndex]?.[wordPosition] ?? -1;
-                    const isActive = wordIndex === activeIndex;
-                    const isParagraphStart = wordPosition === 0;
+                  {sentenceGroups.map((sentence, sentenceIndex) => {
+                    const isSentenceActive =
+                      activeIndex >= sentence.startIndex && activeIndex <= sentence.endIndex;
 
                     return (
                       <span
-                        key={`${paragraphIndex}-${wordPosition}-${displayWord}`}
-                        ref={(node) => {
-                          if (node) {
-                            wordRefs.current[wordIndex] = node;
-                          }
-                        }}
-                        onClick={isParagraphStart ? () => pauseThenJumpToParagraph(paragraphIndex) : undefined}
-                        role={isParagraphStart ? "button" : undefined}
-                        tabIndex={isParagraphStart ? 0 : undefined}
-                        onKeyDown={
-                          isParagraphStart
-                            ? (event) => {
-                                if (event.key === "Enter" || event.key === " ") {
-                                  event.preventDefault();
-                                  pauseThenJumpToParagraph(paragraphIndex);
-                                }
-                              }
-                            : undefined
-                        }
-                        className={`inline-block whitespace-nowrap rounded-[0.35rem] px-0.5 py-0.5 align-baseline transition-colors duration-150 ${
-                          isActive ? "bg-white text-[#1f93d0] shadow-md shadow-white/30" : "bg-transparent"
+                        key={`${paragraphIndex}-${sentenceIndex}-${sentence.startIndex}`}
+                        className={`inline-flex flex-wrap items-start gap-x-1 gap-y-0 rounded-[0.9rem] px-0.5 py-0.25 transition-colors duration-150 ${
+                          isSentenceActive
+                            ? "bg-[#dff3ff]/55 ring-1 ring-[#a9dfff]/45"
+                            : "bg-transparent"
                         }`}
                       >
-                        {displayWord}
+                        {sentence.words.map((word, wordPosition) => {
+                          const displayWord = String(word.word).trimStart();
+                          const globalWordIndex = sentence.startIndex + wordPosition;
+                          const isActive = globalWordIndex === activeIndex;
+                          const isParagraphStart = globalWordIndex === paragraphWordIndices[paragraphIndex]?.[0];
+                          const vocabMatch = getVocabMatch(globalWordIndex, paragraphIndex, wordPosition);
+                          const isVocabWord = Boolean(vocabMatch);
+
+                          return (
+                            <span
+                              key={`${paragraphIndex}-${sentenceIndex}-${wordPosition}-${displayWord}`}
+                              ref={(node) => {
+                                if (node) {
+                                  wordRefs.current[globalWordIndex] = node;
+                                }
+                              }}
+                              onClick={isParagraphStart ? () => pauseThenJumpToParagraph(paragraphIndex) : undefined}
+                              role={isParagraphStart ? "button" : undefined}
+                              tabIndex={isParagraphStart ? 0 : undefined}
+                              onKeyDown={
+                                isParagraphStart
+                                  ? (event) => {
+                                      if (event.key === "Enter" || event.key === " ") {
+                                        event.preventDefault();
+                                        pauseThenJumpToParagraph(paragraphIndex);
+                                      }
+                                    }
+                                  : undefined
+                              }
+                              className={`inline-block whitespace-nowrap rounded-[0.35rem] px-0.5 py-0.5 align-baseline transition-colors duration-150 ${
+                                isActive
+                                  ? "bg-white text-[#1f93d0] shadow-md shadow-white/30"
+                                  : isVocabWord
+                                    ? "font-extrabold text-white"
+                                    : "bg-transparent"
+                              }`}
+                              onClickCapture={
+                                isVocabWord
+                                  ? (event) => {
+                                      event.stopPropagation();
+                                      showVocabDefinition(vocabMatch, event.currentTarget);
+                                    }
+                                  : undefined
+                              }
+                            >
+                              {displayWord}
+                            </span>
+                          );
+                        })}
                       </span>
                     );
                   })}
@@ -351,6 +527,17 @@ export default function ExtraordinaryTeenager() {
               );
             })}
           </div>
+          {activeVocab ? (
+            <div
+              className="pointer-events-none fixed z-[10000] w-[220px] rounded-2xl border-2 border-white bg-[#ff8a00] px-3 py-2 text-white shadow-2xl shadow-black/25"
+              style={{ left: activeVocab.left, top: activeVocab.top }}
+            >
+              <div className="text-[10px] font-black uppercase tracking-[0.18em] text-white/80">Vocabulary</div>
+              <div className="mt-1 text-base font-black leading-tight text-white">
+                {activeVocab.meaning}
+              </div>
+            </div>
+          ) : null}
         </div>
       </div>
 
