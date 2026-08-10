@@ -177,12 +177,30 @@ export default function ExtraordinaryTeenager() {
     setIsPlaying(false);
   };
 
-  const handleRewind = () => {
+  const handleRewindAudio = () => {
     const audio = audioRef.current;
     if (!audio) return;
 
     audio.currentTime = 0;
     setCurrentTime(0);
+
+    const container = textContainerRef.current;
+    if (container) {
+      const isSmallScreen = window.matchMedia("(max-width: 639px)").matches;
+      container.scrollTo({
+        top: 0,
+        behavior: isSmallScreen ? "smooth" : "auto",
+      });
+    }
+  };
+
+  const handleRewind = () => {
+    const paragraphIndex =
+      paragraphWordIndices.findIndex((indices) => indices.includes(activeIndex)) >= 0
+        ? paragraphWordIndices.findIndex((indices) => indices.includes(activeIndex))
+        : 0;
+
+    void pauseThenJumpToParagraph(paragraphIndex);
   };
 
   const duration = audioRef.current?.duration || 0;
@@ -286,21 +304,13 @@ export default function ExtraordinaryTeenager() {
                       paragraphRefs.current[paragraphIndex] = node;
                     }
                   }}
-                  onClick={() => pauseThenJumpToParagraph(paragraphIndex)}
-                  role="button"
-                  tabIndex={0}
-                  onKeyDown={(event) => {
-                    if (event.key === "Enter" || event.key === " ") {
-                      event.preventDefault();
-                      pauseThenJumpToParagraph(paragraphIndex);
-                    }
-                  }}
                   className="m-0 mb-4 flex flex-wrap items-start gap-x-1 gap-y-0 break-normal whitespace-normal last:mb-0 sm:mb-8"
                 >
                   {paragraphWords.map((word, wordPosition) => {
                     const displayWord = String(word.word).trimStart();
                     const wordIndex = paragraphWordIndices[paragraphIndex]?.[wordPosition] ?? -1;
                     const isActive = wordIndex === activeIndex;
+                    const isParagraphStart = wordPosition === 0;
 
                     return (
                       <span
@@ -310,6 +320,19 @@ export default function ExtraordinaryTeenager() {
                             wordRefs.current[wordIndex] = node;
                           }
                         }}
+                        onClick={isParagraphStart ? () => pauseThenJumpToParagraph(paragraphIndex) : undefined}
+                        role={isParagraphStart ? "button" : undefined}
+                        tabIndex={isParagraphStart ? 0 : undefined}
+                        onKeyDown={
+                          isParagraphStart
+                            ? (event) => {
+                                if (event.key === "Enter" || event.key === " ") {
+                                  event.preventDefault();
+                                  pauseThenJumpToParagraph(paragraphIndex);
+                                }
+                              }
+                            : undefined
+                        }
                         className={`inline-block whitespace-nowrap rounded-[0.35rem] px-0.5 py-0.5 align-baseline transition-colors duration-150 ${
                           isActive ? "bg-white text-[#1f93d0] shadow-md shadow-white/30" : "bg-transparent"
                         }`}
@@ -341,9 +364,9 @@ export default function ExtraordinaryTeenager() {
               type="button"
               onClick={handlePlayPause}
               aria-label={isPlaying ? "Pausa" : "Iniciar"}
-              className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border-2 border-[#6f6f6f] bg-[#efefef] shadow-[0_1px_0_rgba(255,255,255,0.9)_inset,0_1px_2px_rgba(0,0,0,0.35)] transition hover:scale-[1.02] active:scale-[0.98] pointer-events-auto touch-manipulation sm:h-11 sm:w-11"
+              className="flex h-10 w-[4.15rem] shrink-0 items-center justify-center rounded-[1.3rem] bg-transparent transition hover:scale-[1.02] active:scale-[0.98] pointer-events-auto touch-manipulation sm:h-11 sm:w-[4.6rem] sm:rounded-[1.35rem]"
             >
-              <span className="flex h-7 w-7 items-center justify-center rounded-full bg-[#2b2b2b] sm:h-8 sm:w-8">
+              <span className="flex h-9 w-12 items-center justify-center rounded-[0.95rem] bg-[#2b2b2b] shadow-[0_0_0_2px_#efefef] sm:h-10 sm:w-[3.35rem] sm:rounded-[1rem]">
                 {isPlaying ? (
                   <svg viewBox="0 0 24 24" className="h-4 w-4 fill-[#7CFC00]" aria-hidden="true">
                     <rect x="6" y="5" width="4" height="14" rx="0.8" />
@@ -361,9 +384,9 @@ export default function ExtraordinaryTeenager() {
               type="button"
               onClick={handleStop}
               aria-label="Stop"
-              className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border-2 border-[#6f6f6f] bg-[#efefef] shadow-[0_1px_0_rgba(255,255,255,0.9)_inset,0_1px_2px_rgba(0,0,0,0.35)] transition hover:scale-[1.02] active:scale-[0.98] pointer-events-auto touch-manipulation sm:h-11 sm:w-11"
+              className="flex h-10 w-[4.15rem] shrink-0 items-center justify-center rounded-[1.3rem] bg-transparent transition hover:scale-[1.02] active:scale-[0.98] pointer-events-auto touch-manipulation sm:h-11 sm:w-[4.6rem] sm:rounded-[1.35rem]"
             >
-              <span className="flex h-7 w-7 items-center justify-center rounded-full bg-[#2b2b2b] sm:h-8 sm:w-8">
+              <span className="flex h-9 w-12 items-center justify-center rounded-[0.95rem] bg-[#2b2b2b] shadow-[0_0_0_2px_#efefef] sm:h-10 sm:w-[3.35rem] sm:rounded-[1rem]">
                 <svg viewBox="0 0 24 24" className="h-4 w-4 fill-[#7CFC00]" aria-hidden="true">
                   <rect x="6" y="6" width="12" height="12" rx="1" />
                 </svg>
@@ -373,10 +396,10 @@ export default function ExtraordinaryTeenager() {
             <button
               type="button"
               onClick={handleRewind}
-              aria-label="Rebobinar"
-              className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border-2 border-[#6f6f6f] bg-[#efefef] shadow-[0_1px_0_rgba(255,255,255,0.9)_inset,0_1px_2px_rgba(0,0,0,0.35)] transition hover:scale-[1.02] active:scale-[0.98] pointer-events-auto touch-manipulation sm:h-11 sm:w-11"
+              aria-label="Rebobinar párrafo"
+              className="flex h-10 w-[4.15rem] shrink-0 items-center justify-center rounded-[1.3rem] bg-transparent transition hover:scale-[1.02] active:scale-[0.98] pointer-events-auto touch-manipulation sm:h-11 sm:w-[4.6rem] sm:rounded-[1.35rem]"
             >
-              <span className="flex h-7 w-7 items-center justify-center rounded-full bg-[#2b2b2b] sm:h-8 sm:w-8">
+              <span className="flex h-9 w-12 items-center justify-center rounded-[0.95rem] bg-[#2b2b2b] shadow-[0_0_0_2px_#efefef] sm:h-10 sm:w-[3.35rem] sm:rounded-[1rem]">
                 <svg viewBox="0 0 24 24" className="h-4 w-4 fill-[#7CFC00]" aria-hidden="true">
                   <path d="M11 12l8 7V5l-8 7z" />
                   <path d="M5 12l8 7V5l-8 7z" />
@@ -384,10 +407,24 @@ export default function ExtraordinaryTeenager() {
               </span>
             </button>
 
+            <button
+              type="button"
+              onClick={handleRewindAudio}
+              aria-label="Rebobinar al inicio"
+              className="flex h-10 w-[4.15rem] shrink-0 items-center justify-center rounded-[1.3rem] bg-transparent transition hover:scale-[1.02] active:scale-[0.98] pointer-events-auto touch-manipulation sm:h-11 sm:w-[4.6rem] sm:rounded-[1.35rem]"
+            >
+              <span className="flex h-9 w-12 items-center justify-center rounded-[0.95rem] bg-[#2b2b2b] shadow-[0_0_0_2px_#efefef] sm:h-10 sm:w-[3.35rem] sm:rounded-[1rem]">
+                <svg viewBox="0 0 24 24" className="h-4 w-4 fill-[#7CFC00]" aria-hidden="true">
+                  <path d="M6 4h2v16H6z" />
+                  <path d="M18 5L8 12l10 7V5z" />
+                </svg>
+              </span>
+            </button>
+
             <div className="shrink-0 rounded-full bg-[#2b2b2b]/85 px-2 py-1 text-[10px] font-black tracking-[0.12em] text-[#7CFC00] sm:px-3 sm:py-1 sm:text-[11px] sm:tracking-[0.16em]">
               {playRate.toFixed(1)}x
           </div>
-            <div className="hidden shrink-0 items-center justify-center gap-1 rounded-full bg-[#2b2b2b]/85 px-2 py-1 text-[10px] font-black tracking-[0.12em] text-white sm:flex">
+            <div className="hidden shrink-0 items-center justify-center gap-2 rounded-full bg-[#2b2b2b]/85 px-3 py-1 text-[10px] font-black tracking-[0.12em] text-white sm:flex sm:gap-3 sm:px-4">
               {[1, 0.9, 0.7, 0.6].map((rate) => (
                 <button
                   key={rate}
@@ -399,7 +436,7 @@ export default function ExtraordinaryTeenager() {
                 </button>
               ))}
             </div>
-            <label className="flex shrink-0 items-center gap-1 rounded-full bg-[#2b2b2b]/85 px-2 py-1 text-[10px] font-black tracking-[0.12em] text-white sm:hidden">
+            <label className="flex shrink-0 items-center gap-2 rounded-full bg-[#2b2b2b]/85 px-2 py-1 text-[10px] font-black tracking-[0.12em] text-white sm:hidden">
               <span className="sr-only">Velocidad</span>
               <select
                 value={playRate}
@@ -418,3 +455,6 @@ export default function ExtraordinaryTeenager() {
     </div>
   );
 }
+
+
+

@@ -1,5 +1,5 @@
 {
-    "text":  " Unit 6, page 76, reading. An extraordinary teenager. Isaac Beech is 14 years old. His nickname is Zach. He goes to a special school in Manchester in the UK. It\u0027s called Chetam's, and it\u0027s a famous music school. Zach plays the piano and the violin. He\u0027s very good. Zach studies regular subjects like English, science, and math at the school, but he has music classes every day, too. Some students go home when they finish class at Chetems, but Zach can\u0027t. His parents and two sisters are in Bristol, 220 kilometers from Manchester. So Chetems is Zach\u0027s school and his home. He studies there, he has breakfast, lunch, and dinner there, and he goes to bed there. There are three other boys in Zach\u0027s room at school. He thinks it\u0027s fun. On Saturday mornings, Zach gets up and goes to school. There aren\u0027t classes, but he plays the violin in the school orchestra. He has free time in the afternoon. On Sundays, Zach does his homework and plays sports. In the evenings, he watches TV and uses the computer. He has 200 cyber friends.",
+    "text":  " Unit 6, page 76, reading. An extraordinary teenager. Isaac Beech is 14 years old. His nickname is Zach. He goes to a special school in Manchester in the UK. It\u0027s called Chetham's, and it\u0027s a famous music school. Zach plays the piano and the violin. He\u0027s very good. Zach studies regular subjects like English, science, and math at the school, but he has music classes every day, too. Some students go home when they finish class at Chetham's, but Zach can\u0027t. His parents and two sisters are in Bristol, 220 kilometers from Manchester. So Chetham's is Zach\u0027s school and his home. He studies there, he has breakfast, lunch, and dinner there, and he goes to bed there. There are three other boys in Zach\u0027s room at school. He thinks it\u0027s fun. On Saturday mornings, Zach gets up and goes to school. There aren\u0027t classes, but he plays the violin in the school orchestra. He has free time in the afternoon. On Sundays, Zach does his homework and plays sports. In the evenings, he watches TV and uses the computer. He has 200 cyber friends.",
     "segments":  [
                      {
                          "id":  0,
@@ -301,7 +301,7 @@
                          "seek":  0,
                          "start":  19.76,
                          "end":  23.2,
-                         "text":  " It\u0027s called Chetam's, and it\u0027s a famous music school.",
+                         "text":  " It\u0027s called Chetham's, and it\u0027s a famous music school.",
                          "tokens":  [
                                         51313,
                                         632,
@@ -339,7 +339,7 @@
                                            "probability":  0.9938256740570068
                                        },
                                        {
-                                           "word":  " Chetam's,",
+                                           "word":  " Chetham's,",
                                            "start":  20.24,
                                            "end":  20.8,
                                            "probability":  0.45912714799245197
@@ -690,7 +690,7 @@
                          "seek":  2866,
                          "start":  39.62,
                          "end":  42.56,
-                         "text":  " Some students go home when they finish class at Chetam's,",
+                         "text":  " Some students go home when they finish class at Chetham's,",
                          "tokens":  [
                                         50913,
                                         2773,
@@ -768,7 +768,7 @@
                                            "probability":  0.996100664138794
                                        },
                                        {
-                                           "word":  " Chetam's,",
+                                           "word":  " Chetham's,",
                                            "start":  42.18,
                                            "end":  42.56,
                                            "probability":  0.4937927524248759
@@ -940,7 +940,7 @@
                          "seek":  2866,
                          "start":  52.52,
                          "end":  56.18,
-                         "text":  " So Chetam's is Zach\u0027s school and his home.",
+                         "text":  " So Chetham's is Zach\u0027s school and his home.",
                          "tokens":  [
                                         51563,
                                         1406,
@@ -969,7 +969,7 @@
                                            "probability":  0.9909165501594543
                                        },
                                        {
-                                           "word":  " Chetam's",
+                                           "word":  " Chetham's",
                                            "start":  53.24,
                                            "end":  53.68,
                                            "probability":  0.9267943700154623
@@ -1803,3 +1803,5 @@
                  ],
     "language":  "en"
 }
+
+
